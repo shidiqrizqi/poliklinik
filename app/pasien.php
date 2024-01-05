@@ -49,6 +49,9 @@
         else if($_GET['page']=='data-poli'){
           include('data_poli.php');
         }
+        else if($_GET['page']=='detail-poli'){
+          include('detail_poli.php');
+        }
         else{
           include('not_found.php');
         }

@@ -114,6 +114,59 @@
           </div>
       </section>
 
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Riwayat Daftar Poli</h3>
+            </div>
+
+            <div class="card-body p-0">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th style="width: 10px">No</th>
+                    <th>Poli</th>
+                    <th>Dokter</th>
+                    <th>Hari</th>
+                    <th>Mulai</th>
+                    <th>Selesai</th>
+                    <th>Antrian</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    $no = 1;
+                    $query = mysqli_query($koneksi,"SELECT daftar_poli.id, daftar_poli.no_antrian, jadwal_periksa.hari, jadwal_periksa.jam_mulai, jadwal_periksa.jam_selesai, dokter.nama, poli.nama_poli 
+                                                    FROM daftar_poli 
+                                                    LEFT JOIN jadwal_periksa ON daftar_poli.id_jadwal = jadwal_periksa.id
+                                                    LEFT JOIN dokter ON jadwal_periksa.id_dokter = dokter.id
+                                                    LEFT JOIN poli ON dokter.id_poli = poli.id
+                                                    ORDER BY daftar_poli.id DESC");
+                    while ($dok = mysqli_fetch_array($query)) {
+
+                  ?>
+                  <tr>
+                    <td><?php echo $no;?></td>
+                    <td><?php echo $dok['nama_poli'];?></td>
+                    <td><?php echo $dok['nama'];?></td>
+                    <td><?php echo $dok['hari'];?></td>
+                    <td><?php echo $dok['jam_mulai'];?></td>
+                    <td><?php echo $dok['jam_selesai']; ?></td>
+                    <td><?php echo $dok['no_antrian']; ?></td>
+                    <td>
+                      <a href="pasien.php?page=detail-poli&& id=<?php echo $dok['id']?>" class="btn btn-sm btn-success">Detail</a>
+                    </td>
+                  </tr>
+                  <?php $no++; } ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Control Sidebar -->
       <aside class="control-sidebar control-sidebar-dark">
         <!-- Control sidebar content goes here -->
