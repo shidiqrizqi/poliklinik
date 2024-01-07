@@ -10,6 +10,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm_password'];
 
+    // Check if the KTP number already exists
+    $check_query = "SELECT * FROM pasien WHERE no_ktp = '$no_ktp'";
+    $result = mysqli_query($koneksi, $check_query);
+
+    if (mysqli_num_rows($result) > 0) {
+        // KTP number already exists, redirect back to registration page with an error code
+        header('Location: ../index.php?page=register-pasien&error=6');
+        exit();
+    }
+
     // Validate input
     if (empty($nama) || empty($alamat) || empty($no_ktp) || empty($no_hp) || empty($password) || empty($confirmPassword)) {
         header('Location:../index.php?page=register-pasien&error=3'); // Empty input error

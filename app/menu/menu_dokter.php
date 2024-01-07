@@ -11,6 +11,14 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="dokter.php?page=data-jadwal-periksa" class="nav-link">
+              <i class="nav-icon fas fa-clipboard-list"></i>
+              <p>
+                Jadwal Periksa
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="dokter.php?page=data-periksa-pasien" class="nav-link">
               <i class="nav-icon fas fa-stethoscope"></i>
               <p>

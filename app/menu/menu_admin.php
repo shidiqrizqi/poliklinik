@@ -28,7 +28,7 @@
           </li>
           <li class="nav-item">
             <a href="index.php?page=data-poli" class="nav-link">
-              <i class="nav-icon fas fa-user-injured"></i>
+              <i class="nav-icon fas fa-hospital"></i>
               <p>
                 Poli
               </p>
@@ -36,7 +36,7 @@
           </li>
           <li class="nav-item">
             <a href="index.php?page=data-obat" class="nav-link">
-              <i class="nav-icon fas fa-user-injured"></i>
+              <i class="nav-icon fas fa-pills"></i>
               <p>
                 Obat
               </p>

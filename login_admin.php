@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="shortcut icon" href="images/favicon.png" type="">
+  <link rel="shortcut icon" href="images/fiklogo.png" type="">
   <title>Admin Poliklinik</title>
 
   <!-- Google Font: Source Sans Pro -->
@@ -41,7 +41,7 @@
           <input type="text" class="form-control" placeholder="Username | Case Sensitive" name="username">
           <div class="input-group-append">
             <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
+            <span class="fas fa-user"></span>
             </div>
           </div>
         </div>

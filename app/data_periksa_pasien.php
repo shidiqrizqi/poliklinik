@@ -1,107 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
 <?php
-// Start or resume the session
-if (!isset($_SESSION)) {
-    session_start();
-}
+    include('../conf/config_poliklinik.php');
 
-// Include the database connection file
-include_once("../conf/config_poliklinik.php");
-
-/// Query to fetch data from pasien and daftar_poli tables with status_periksa
-$pasienQuery = "SELECT pasien.id, pasien.nama, daftar_poli.keluhan, daftar_poli.status_periksa
-                FROM pasien 
-                INNER JOIN daftar_poli ON pasien.id = daftar_poli.id_pasien";
-
-
-// Prepare and execute the query
-$stmt = $koneksi->prepare($pasienQuery);
-
-if ($stmt === false) {
-    die("Error in preparing statement");
-}
-
-$stmt->execute();
-
-// Get the result and fetch data
-$pasienResult = $stmt->get_result();
-$pasienData = $pasienResult->fetch_all(MYSQLI_ASSOC);
-
-$stmt->close();
-
-// Query to fetch data from periksa, detail_periksa, and obat tables
-$detailQuery = "SELECT periksa.id, periksa.tgl_periksa, periksa.catatan, obat.nama_obat, obat.kemasan, obat.harga
-                FROM periksa 
-                LEFT JOIN detail_periksa ON periksa.id = detail_periksa.id_periksa
-                LEFT JOIN obat ON detail_periksa.id_obat = obat.id";
-
-// Prepare and execute the query
-$detailStmt = $koneksi->prepare($detailQuery);
-
-if ($detailStmt === false) {
-    die("Error in preparing statement");
-}
-
-$detailStmt->execute();
-
-// Get the result and fetch data
-$detailResult = $detailStmt->get_result();
-$detailData = $detailResult->fetch_all(MYSQLI_ASSOC);
-
-$detailStmt->close();
-
-//// Process form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get data from the form
-    $id_pasien = $_POST['periksa_id_pasien'];
-    $status_periksa = $_POST['periksa_status'];
-
-    // Update the daftar_poli table
-    $updateQuery = "UPDATE daftar_poli SET status_periksa = ? WHERE id_pasien = ?";
-    $updateStmt = $koneksi->prepare($updateQuery);
-
-    if ($updateStmt === false) {
-        die("Error in preparing update statement: " . $koneksi->error);
-    }
-
-    // Tipe data "s" untuk string, "i" untuk integer
-    $updateStmt->bind_param("si", $status_periksa, $id_pasien);
-
-    if ($updateStmt->execute() === false) {
-        die("Error in executing update statement: " . $updateStmt->error);
-    } else {
-        // Logging: Tulis ke file log atau outputkan ke console
-        file_put_contents('update_log.txt', "Update successful for id_pasien: $id_pasien\n", FILE_APPEND);
-    }
-
-    $updateStmt->close();
-
-    // Query to fetch all data from the periksa table
-    $allPeriksaQuery = "SELECT * FROM periksa";
-
-    // Prepare and execute the query
-    $allPeriksaStmt = $koneksi->prepare($allPeriksaQuery);
-
-    if ($allPeriksaStmt === false) {
-        die("Error in preparing statement");
-    }
-
-    $allPeriksaStmt->execute();
-
-    // Get the result and fetch data
-    $allPeriksaResult = $allPeriksaStmt->get_result();
-    $allPeriksaData = $allPeriksaResult->fetch_all(MYSQLI_ASSOC);
-
-    $allPeriksaStmt->close();
-}
+    $nama_dokter = $_SESSION['nama'];
 ?>
 
-
-
-<!DOCTYPE html>
-<html lang="id">
-<body class="hold-transition sidebar-mini">
+  <body class="hold-transition sidebar-mini">
     <div class="wrapper">
-    <section class="content-header">
+      <!-- Content Header (Page header) -->
+      <section class="content-header">
           <div class="container-fluid">
             <div class="row mb-1">
               <div class="col-sm-6">
@@ -109,210 +17,167 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
               <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                  <li class="breadcrumb-item"><a href="dokter.php?page=dashboard">Home</a></li>
-                  <li class="breadcrumb-item active">Daftar Periksa</li>
+                  <li class="breadcrumb-item"><a href="dokter.php">Home</a></li>
+                  <li class="breadcrumb-item active">Daftar Periksa Pasien</li>
                 </ol>
               </div>
             </div>
           </div><!-- /.container-fluid -->
       </section>
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <table id="example2" class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama</th>
-                                            <th>Keluhan</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        foreach ($pasienData as $pasienRow) {
-                                            echo "<tr>";
-                                            echo "<td>" . $pasienRow['id'] . "</td>";
-                                            echo "<td>" . $pasienRow['nama'] . "</td>";
-                                            echo "<td>" . $pasienRow['keluhan'] . "</td>";
-                                            echo "<td>";
-
-                                            // Check if the 'status_periksa' key exists in the $pasienRow array
-                                            if (array_key_exists('status_periksa', $pasienRow)) {
-                                                // Check the status and display the appropriate button
-                                                if ($pasienRow['status_periksa'] == 1) {
-                                                    // Status is 1, hide "Periksa" button and show "Edit" button
-                                                    echo "<button class='btn btn-primary aksi-btn' data-toggle='modal' data-target='#editModal' data-id='" . $pasienRow['id'] . "'>Edit</button>";
-                                                } else {
-                                                    // Status is 0, hide "Edit" button and show "Periksa" button
-                                                    echo "<button class='btn btn-success aksi-btn' data-toggle='modal' data-target='#periksaModal' data-id='" . $pasienRow['id'] . "'>Periksa</button>";
-                                                }
-                                            } else {
-                                                // Handle the case where 'status_periksa' key is not present in the array
-                                                echo "Status not available";
-                                            }
-
-                                            echo "</td>";
-                                            echo "</tr>";
-                                        }
-                                        ?>
-
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/js/bootstrap.min.js"></script>
-
-    <!-- Periksa Modal -->
-    <div class="modal fade" id="periksaModal" tabindex="-1" role="dialog" aria-labelledby="periksaModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="periksaModalLabel">Update Status Periksa</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" action="menuperiksaDokter.php">
-                        <input type="hidden" name="periksa_id_pasien" id="periksa_id_pasien" readonly>
-                        <div class="form-group">
-                            <label for="periksa_status">Status Periksa</label>
-                            <select class="form-control" id="periksa_status" name="periksa_status">
-                                <option value="1">Sudah Diperiksa</option>
-                                <option value="0">Belum Diperiksa</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update Status</button>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ... (existing code) ... -->
-
-    <!-- Edit Modal -->
-    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit Pasien</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" action="menuperiksaDokter.php">
-                        <input type="hidden" name="id_pasien" id="edit_id_pasien">
-                        <input type="hidden" name="id_periksa" id="edit_id_periksa">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="edit_nama">Nama</label>
-                                    <input type="text" class="form-control" id="edit_nama" name="edit_nama" value="<?php echo $pasienData[0]['nama']; ?>" required>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="edit_tanggal_periksa">Tanggal Periksa</label>
-                                    <input type="datetime" class="form-control" id="edit_tanggal_periksa" name="edit_tanggal_periksa" value="<?php echo $detailData[0]['tgl_periksa']; ?>" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit_catatan">Catatan</label>
-                            <textarea class="form-control" id="edit_catatan" name="edit_catatan" rows="3"><?php echo $detailData[0]['catatan']; ?></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit_obat">Obat</label>
-                            <select class="form-control" id="edit_obat" name="edit_obat[]" multiple>
-                                <?php
-                                foreach ($detailData as $detailRow) {
-                                    if ($detailRow['id_obat'] == $id_obat && $detailRow['harga'] > 0) {
-                                        // Use a more readable separator in the value attribute
-                                        $optionValue = $detailRow['nama_obat'] . '|' . $detailRow['kemasan'] . '|' . $detailRow['harga'];
-
-                                        // Format the "harga" as IDR using number_format
-                                        $formattedHarga = 'IDR ' . number_format($detailRow['harga'], 0, ',', '.');
-
-                                        // Use htmlspecialchars for the displayed option text
-                                        $optionText = htmlspecialchars($detailRow['nama_obat'] . ' - ' . $detailRow['kemasan'] . ' - ' . $formattedHarga);
-
-                                        // Set both the value and text attributes of the <option> element
-                                        echo "<option value='" . $optionValue . "'>" . $optionText . "</option>";
-                                    }
-                                }
+      <!-- Main content -->
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row">
+            <!-- /.col -->
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body p-0">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>No Urut</th>
+                        <th>Nama Pasien</th>
+                        <th>Keluhan</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                            $query = mysqli_query($koneksi, "SELECT pasien.nama, daftar_poli.keluhan, daftar_poli.status_periksa, daftar_poli.id, daftar_poli.no_antrian 
+                                                            FROM daftar_poli 
+                                                            INNER JOIN pasien ON daftar_poli.id_pasien = pasien.id 
+                                                            INNER JOIN jadwal_periksa ON daftar_poli.id_jadwal = jadwal_periksa.id 
+                                                            INNER JOIN dokter ON jadwal_periksa.id_dokter = dokter.id 
+                                                            WHERE dokter.nama = '$nama_dokter'
+                                                            ORDER BY daftar_poli.no_antrian ASC");
+                            if ($query) {
+                            while ($dok = mysqli_fetch_array($query)) {
+                        ?>
+                        <tr>
+                            <td><?php echo $dok['no_antrian']; ?></td>
+                            <td><?php echo $dok['nama']; ?></td>
+                            <td><?php echo $dok['keluhan']; ?></td>
+                            <td>
+                                <?php if ($dok['status_periksa'] == 1) {
                                 ?>
-                            </select>
-                        </div>
-                        <!-- <button type="submit" class="btn btn-primary">Simpan Perubahan</button> -->
-                    </form>
+                                    <button type='button' class='btn btn-sm btn-warning edit-btn' data-toggle="modal" data-target="#editModal<?php echo $dok['id'] ?>">Edit</button>
+                                    <div class="modal fade" id="editModal<?php echo $dok['id'] ?>" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="addModalLabel">Perbarui Periksa Pasien</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <?php
+                                                        $idDaftarPoli = $dok['id'];
+                                                        require '../conf/config_poliklinik.php';
+                                                        $ambilDataPeriksa = mysqli_query($koneksi, "SELECT * FROM periksa INNER JOIN daftar_poli ON periksa.id_daftar_poli = daftar_poli.id WHERE daftar_poli.id = '$idDaftarPoli'");
+                                                        $ambilData = mysqli_fetch_assoc($ambilDataPeriksa);
+                                                    ?>
+                                                    <form action="periksaPasien/edit_periksa_pasien.php" method="post">
+                                                        <input type="hidden" name="id" value="<?php echo $dok['id'] ?>">
+                                                        <div class="form-group">
+                                                            <label for="nama">Nama Pasien</label>
+                                                            <input type="text" class="form-control" id="nama" name="nama" required value="<?php echo $dok['nama'] ?>" readonly>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="tanggal_periksa">Tanggal Periksa</label>
+                                                            <input type="datetime-local" class="form-control" id="tanggal_periksa" name="tanggal_periksa" required value="<?php echo $ambilData['tgl_periksa'] ?>">
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                            <label for="catatan">Catatan</label>
+                                                            <textarea class="form-control" rows="3" id="catatan" name="catatan" required><?php echo $ambilData['catatan'] ?></textarea>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-success">Simpan</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php  } else { ?>
+                                    <button type='button' class='btn btn-sm btn-primary edit-btn' data-toggle="modal" data-target="#periksaModal<?php echo $dok['id'] ?>">Periksa</button>
+                                    <div class="modal fade" id="periksaModal<?php echo $dok['id'] ?>" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="addModalLabel">Periksa Pasien</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="resetData()>
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form id="dataPeriksa" action="periksaPasien/periksa_pasien.php" method="post">
+                                                        <input type="hidden" name="id" value="<?php echo $dok['id'] ?>">
+                                                        <div class="form-group">
+                                                            <label for="nama">Nama Pasien</label>
+                                                            <input type="text" class="form-control" id="nama" name="nama" required value="<?php echo $dok['nama'] ?>" disabled>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="tanggal_periksa">Tanggal Periksa</label>
+                                                            <input type="datetime-local" class="form-control" id="tanggal_periksa" name="tanggal_periksa" required>
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                            <label for="catatan">Catatan</label>
+                                                            <textarea class="form-control" rows="3" id="catatan" name="catatan" required></textarea>
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                            <label>Obat</label>
+                                                            <select class="select2" multiple="multiple" data-placeholder="Pilih Obat" style="width: 100%;" name="obat[]">
+                                                                <?php
+                                                                require '../conf/config_poliklinik.php';
+                                                                $getObat = "SELECT * FROM obat";
+                                                                $queryObat = mysqli_query($koneksi, $getObat);
+                                                                while ($doks = mysqli_fetch_assoc($queryObat)) {
+                                                                ?>
+                                                                    <option value="<?php echo $doks['id'] ?>">
+                                                                        <?php echo $doks['nama_obat'] ?></option>
+                                                                <?php } ?>
+                                                            </select>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary">Periksa</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php } ?>
+                            </td>
+                        </tr>
+                      <?php
+                          }
+                        } else {
+                          // Handle query error
+                          echo "Error: " . mysqli_error($koneksi);
+                        }
+                      ?>
+                    </tbody>
+                  </table>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                </div>
+                <!-- /.card-body -->
+              </div>
+              <!-- /.card -->
             </div>
+            <!-- /.col -->
+          </div>
         </div>
+      </section>
+      <!-- /.content -->
+
+      <!-- Control Sidebar -->
+      <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+      </aside>
+      <!-- /.control-sidebar -->
     </div>
-
-    <!-- JavaScript untuk menangani data pada modal -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/js/bootstrap.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Tangkap klik pada tombol "Periksa"
-            $('.btn-success').click(function() {
-                // Ambil nilai ID pasien dari atribut data-id tombol
-                var id_pasien = $(this).data('id');
-
-                // Set nilai ID pasien ke elemen input periksa_id_pasien pada modal
-                $('#periksa_id_pasien').val(id_pasien);
-            });
-        });
-    </script>
+    <!-- ./wrapper -->
 
     <script>
-        $(document).ready(function() {
-            // Tangkap klik pada tombol "Edit"
-            $('.btn-primary').click(function() {
-                // Ambil nilai ID pasien dari atribut data-id tombol
-                var id_pasien = $(this).data('id');
-
-                // Temukan data pasien yang sesuai dengan ID pasien yang dipilih
-                var selectedPasien = <?php echo json_encode($pasienData); ?>;
-                var pasienData = selectedPasien.find(pasien => pasien.id == id_pasien);
-
-                // Set nilai ID pasien ke elemen input edit_id_pasien pada modal
-                $('#edit_id_pasien').val(id_pasien);
-
-                // Set nilai Nama pada elemen input edit_nama pada modal
-                $('#edit_nama').val(pasienData.nama);
-
-
-            });
-        });
+      function resetData() {
+          document.getElementById("dataPeriksa").reset();
+      }
     </script>
-
-</body>
-
+  </body>
 </html>

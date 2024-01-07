@@ -16,6 +16,17 @@
 </script>
 <!-- Bootstrap 4 -->
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 JS -->
+<script src="plugins/select2/js/select2.full.min.js"></script>
+<script>
+  $(document).ready(function() {
+      $('.select2').select2();
+
+      $('.select2bs4').select2({
+        theme: 'bootstrap4'
+      })
+  });
+</script>
 <!-- ChartJS -->
 <script src="plugins/chart.js/Chart.min.js"></script>
 <!-- Sparkline -->

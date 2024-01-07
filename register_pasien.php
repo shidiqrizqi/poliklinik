@@ -38,7 +38,7 @@
           <input type="text" class="form-control" placeholder="Nama" name="nama" required>
           <div class="input-group-append">
             <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
+              <span class="fas fa-user"></span>
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@
           <input type="text" class="form-control" placeholder="Alamat" name="alamat" required>
           <div class="input-group-append">
             <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
+              <span class="fas fa-map-marker"></span>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@
           <input type="text" class="form-control" placeholder="Nomor HP" name="no_hp" required>
           <div class="input-group-append">
             <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
+              <span class="fas fa-phone"></span>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@
           <input type="text" class="form-control" placeholder="Nomor KTP" name="no_ktp" required>
           <div class="input-group-append">
             <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
+              <span class="fas fa-address-card"></span>
             </div>
           </div>
         </div>
@@ -159,6 +159,21 @@ if(isset ($_GET['error'])){
         Toast.fire({
             icon: 'error',
             title: 'Gagal menyimpan data ke database !'
+        })
+    </script>";
+  }
+  else if ($error == 6) {
+    echo "
+    <script>
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        Toast.fire({
+            icon: 'error',
+            title: 'Nomor KTP sudah tersedia!'
         })
     </script>";
   }
