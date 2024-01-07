@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     if ($query) {
         $_SESSION['nama'] = $nama;
-        header("Location:../app/dokter.php"); // Successful login, redirect to dashboard
+        header("Location:../app/dokter.php?page=dashboard"); // Successful login, redirect to dashboard
         exit();
     } else {
         header('Location:../index.php?page=login-dokter&error=1'); // Database error
